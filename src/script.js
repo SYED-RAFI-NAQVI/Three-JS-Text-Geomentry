@@ -20,32 +20,56 @@ const texture = textureLoader.load("/textures/matcaps/1.png");
 // Fonts
 const fontLoader = new THREE.FontLoader();
 fontLoader.load("/fonts/Snacker.json", (font) => {
-  const name = prompt("yourName???");
-  const textGeometry = new THREE.TextGeometry(`${name}`, {
-    font: font,
-    size: 0.8,
-    height: 0.4,
-    curveSegments: 42,
-    bevelEnabled: true,
-    bevelThickness: 0.002,
-    bevelSize: 0.001,
-    bevelOffset: 0,
-    bevelSegments: 5,
+  const userInput = prompt(
+    "What would you like to show in 3D? (Enter your name or 3 words):",
+    "Syed Rafi Naqvi"
+  );
+  const initialText = userInput && userInput.trim() ? userInput.trim() : "Syed Rafi Naqvi";
+
+  let textMesh;
+  const textMaterial = new THREE.MeshMatcapMaterial({ matcap: texture });
+
+  function createTextMesh(str) {
+    if (textMesh) {
+      scene.remove(textMesh);
+      textMesh.geometry.dispose();
+    }
+    const textGeometry = new THREE.TextGeometry(str, {
+      font: font,
+      size: 0.8,
+      height: 0.4,
+      curveSegments: 42,
+      bevelEnabled: true,
+      bevelThickness: 0.002,
+      bevelSize: 0.001,
+      bevelOffset: 0,
+      bevelSegments: 5,
+    });
+    textGeometry.center();
+    textMesh = new THREE.Mesh(textGeometry, textMaterial);
+    scene.add(textMesh);
+  }
+
+  createTextMesh(initialText);
+
+  // Live text input via GUI
+  const textParams = { text: initialText };
+  gui.add(textParams, "text").name("3D Text").onFinishChange((value) => {
+    if (value && value.trim()) {
+      createTextMesh(value.trim());
+    }
   });
-  textGeometry.center();
+
   const material = new THREE.MeshNormalMaterial();
-  const textMaterial = new THREE.MeshMatcapMaterial();
-  textMaterial.matcap = texture;
-  const text = new THREE.Mesh(textGeometry, textMaterial);
-  const donutGeomentry = new THREE.TorusBufferGeometry(0.4, 0.2, 20, 45);
-  const boxGeomentry = new THREE.BoxBufferGeometry(0.2, 0.2, 0.2);
-  const coneGeomentry = new THREE.ConeBufferGeometry(0.1, 0.3, 32);
-  const sphereGeomentry = new THREE.SphereBufferGeometry(0.1, 16, 26);
+  const donutGeometry = new THREE.TorusBufferGeometry(0.4, 0.2, 20, 45);
+  const boxGeometry = new THREE.BoxBufferGeometry(0.2, 0.2, 0.2);
+  const coneGeometry = new THREE.ConeBufferGeometry(0.1, 0.3, 32);
+  const sphereGeometry = new THREE.SphereBufferGeometry(0.1, 16, 26);
   for (let i = 0; i < 50; i++) {
-    const donut = new THREE.Mesh(donutGeomentry, material);
-    const box = new THREE.Mesh(boxGeomentry, material);
-    const cone = new THREE.Mesh(coneGeomentry, material);
-    const sphere = new THREE.Mesh(sphereGeomentry, material);
+    const donut = new THREE.Mesh(donutGeometry, material);
+    const box = new THREE.Mesh(boxGeometry, material);
+    const cone = new THREE.Mesh(coneGeometry, material);
+    const sphere = new THREE.Mesh(sphereGeometry, material);
     donut.position.x = (Math.random() - 0.5) * 10;
     donut.position.y = (Math.random() - 0.5) * 10;
     donut.position.z = (Math.random() - 0.5) * 10;
@@ -68,8 +92,6 @@ fontLoader.load("/fonts/Snacker.json", (font) => {
 
     scene.add(donut, box, cone, sphere);
   }
-
-  scene.add(text);
 });
 
 // Lights
